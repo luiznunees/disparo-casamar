@@ -1,0 +1,7 @@
+.env
+dados/
+estado.json
+estado.json.tmp
+disparo.log
+relatorio.*
+PAUSAR
