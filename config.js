@@ -19,27 +19,39 @@ module.exports = {
 
   // ------------------------------------------------------------------
   //  AGENDA: por dia, as janelas de envio e os limites.
-  //  novos      = primeiros contatos (as 4 variantes do teste A/B)
+  //  novos      = primeiros contatos
   //  followups  = mensagem de reforço para quem não respondeu em 24h
   //  Dias que não aparecem aqui = nada é enviado (mas as respostas
   //  continuam sendo registradas e avisadas).
+  //
+  //  Lição de 01/10: 51 envios em 75 min = restrição. Agora são no
+  //  máximo 45 por dia, espalhados das 8h às 18h (1 a cada ~13 min).
   // ------------------------------------------------------------------
   AGENDA: {
-    '2026-10-01': { janelas: [['09:00', '12:00'], ['14:00', '19:30']], novos: 170, followups: 0  }, // qui (início)
-    '2026-10-02': { janelas: [['09:00', '12:00'], ['14:00', '19:30']], novos: 170, followups: 80 }, // sex
-    '2026-10-03': { janelas: [['09:30', '12:30'], ['15:00', '18:00']], novos: 120, followups: 80 }, // sáb
-    '2026-10-04': { janelas: [['10:00', '12:30']],                 novos: 70,  followups: 30 }, // dom (eleição – manhã mais curta)
+    '2026-10-03': { janelas: [['08:00', '18:00']], novos: 45, followups: 0 }, // sáb
+    // dom 04/10 (eleição): sem envio
+    '2026-10-05': { janelas: [['08:00', '18:00']], novos: 45, followups: 0 }, // seg
   },
 
-  // Intervalo aleatório entre uma mensagem e outra (segundos)
-  INTERVALO_MIN_S: 45,
-  INTERVALO_MAX_S: 120,
+  // Só a variante vencedora do teste A/B (A = 54% de resposta). null = usa a da planilha.
+  VARIANTE_ENVIO: 'A',
+
+  // Ordem de prioridade (quem mais respondeu no teste vai primeiro)
+  PRIORIDADE_TIPO: ['PF', 'PJ'],                                   // PF 28% x PJ 17%
+  PRIORIDADE_CONDOMINIO: ['Zen', 'Lótus Atlântida', 'Amare Home Resort', 'Los Cobos'], // 44%, 33%, 14%, 13%
+
+  // Números que nunca recebem (já contatados antes)
+  ARQUIVO_JA_CONTATADOS: './ja_contatados.txt',
+
+  // Intervalo aleatório entre uma mensagem e outra (segundos): 10 a 16 min
+  INTERVALO_MIN_S: 600,
+  INTERVALO_MAX_S: 960,
 
   // Horas sem resposta até mandar o follow-up
   HORAS_ATE_FOLLOWUP: 24,
 
   // Segurança
-  PAUSAR_APOS_ERROS_SEGUIDOS: 5,     // pausa 30 min se der X erros de envio seguidos
+  PARAR_APOS_ERROS_SEGUIDOS: 2,      // para TUDO (cria o arquivo PAUSAR) após X erros seguidos – sinal de restrição
   VERIFICAR_RESPOSTAS_A_CADA_S: 120, // de quanto em quanto tempo busca respostas
 
   // Nome curto do condomínio usado nas mensagens

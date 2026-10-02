@@ -89,6 +89,15 @@ function carregarEstado() {
       condominio: c.condominios.split(' + ')[0], variante: c.variante, status: 'pendente',
     };
   }
+  // quem já recebeu mensagem antes (mesmo que o estado tenha se perdido) nunca entra na fila
+  const arqJa = CFG.ARQUIVO_JA_CONTATADOS && path.resolve(DIR, CFG.ARQUIVO_JA_CONTATADOS);
+  if (arqJa && fs.existsSync(arqJa)) {
+    for (const l of fs.readFileSync(arqJa, 'utf8').split(/\r?\n/)) {
+      const n = l.split('#')[0].replace(/\D/g, '');
+      const c = n && e.contatos[n];
+      if (c && c.status === 'pendente') c.status = 'contatado_antes';
+    }
+  }
   return e;
 }
 function salvarEstado(e) {
@@ -98,10 +107,18 @@ function salvarEstado(e) {
 }
 function contadorDia(e, dia) { return (e.porDia[dia] ||= { novos: 0, followups: 0 }); }
 
-// Próximo contato: sempre da variante com menos envios até agora, para o teste A/B
-// ficar equilibrado a qualquer momento (e condomínios misturados, em ordem estável)
+// Próximo contato.
+// Com VARIANTE_ENVIO definida: segue a prioridade (tipo, condomínio) do config.
+// Sem ela (teste A/B): sempre da variante com menos envios, para o teste ficar equilibrado.
 function proximoNovo(e) {
   const cs = Object.values(e.contatos);
+  if (CFG.VARIANTE_ENVIO) {
+    const rank = (lista, v) => { const i = (lista || []).indexOf(v); return i < 0 ? 99 : i; };
+    return cs.filter(c => c.status === 'pendente').sort((a, b) =>
+      rank(CFG.PRIORIDADE_TIPO, a.tipo) - rank(CFG.PRIORIDADE_TIPO, b.tipo) ||
+      rank(CFG.PRIORIDADE_CONDOMINIO, a.condominio) - rank(CFG.PRIORIDADE_CONDOMINIO, b.condominio) ||
+      hash(a.numero) - hash(b.numero))[0] || null;
+  }
   const enviados = {}, pend = {};
   for (const c of cs) {
     if (c.status === 'pendente') (pend[c.variante] ||= []).push(c);
@@ -142,6 +159,10 @@ async function verificarNumero(numero) {
   const r = await evo('POST', `/chat/whatsappNumbers/${INSTANCIA}`, { numbers: [numero] });
   const x = Array.isArray(r) ? r[0] : null;
   return x ? { existe: !!x.exists, jid: x.jid } : { existe: true, jid: null };
+}
+async function jaConversou(jid) {
+  const r = await evo('POST', `/chat/findMessages/${INSTANCIA}`, { where: { key: { remoteJid: jid } }, page: 1, offset: 20 });
+  return (r?.messages?.records || []).some(m => m.key?.remoteJid === jid);
 }
 const enviarTexto = (numero, text) => evo('POST', `/message/sendText/${INSTANCIA}`, { number: numero, text });
 let arteB64;
@@ -237,10 +258,15 @@ function proximoFollowup(e) {
 }
 
 async function enviarPrimeiro(e, c) {
+  if (CFG.VARIANTE_ENVIO) c.variante = CFG.VARIANTE_ENVIO;
   const v = CFG.VARIANTES[c.variante];
   const chk = await verificarNumero(c.numero);
   if (!chk.existe) { c.status = 'sem_whatsapp'; salvarEstado(e); log('∅ sem WhatsApp', c.numero, c.nome); return false; }
   c.jid = chk.jid || c.jid;
+  // trava contra duplicidade: se já existe conversa com esse número no WhatsApp, não envia
+  if (c.jid && await jaConversou(c.jid)) {
+    c.status = 'contatado_antes'; salvarEstado(e); log('↷ já conversou antes, pulando', c.numero, c.nome); return false;
+  }
   const texto = textoPara(c, v);
   if (v.imagem) await enviarImagem(c.numero, texto); else await enviarTexto(c.numero, texto);
   c.status = 'enviado'; c.enviadoEm = Date.now();
@@ -294,9 +320,12 @@ async function loop() {
               salvarEstado(e);
               log('❌ erro ao enviar para', c.numero, '-', err.message);
               proximoEnvio = Date.now() + 30e3;
-              if (errosSeguidos >= CFG.PAUSAR_APOS_ERROS_SEGUIDOS) {
-                pausadoAte = Date.now() + 30 * 60e3; errosSeguidos = 0;
-                log(`⏸️ ${CFG.PAUSAR_APOS_ERROS_SEGUIDOS} erros seguidos – pausando 30 min`);
+              if (errosSeguidos >= CFG.PARAR_APOS_ERROS_SEGUIDOS) {
+                // erros seguidos costumam ser restrição do WhatsApp: insistir só piora. Para tudo.
+                fs.writeFileSync(path.join(DADOS, 'PAUSAR'), `parado em ${new Date().toISOString()}: ${err.message}\n`);
+                errosSeguidos = 0;
+                log(`⛔ ${CFG.PARAR_APOS_ERROS_SEGUIDOS} erros seguidos – DISPARO PARADO (arquivo PAUSAR criado). Último erro: ${err.message}`);
+                await avisarTime(`⛔ *Disparo parado automaticamente*\n\n${CFG.PARAR_APOS_ERROS_SEGUIDOS} erros seguidos ao enviar (possível restrição).\nÚltimo erro: ${err.message.slice(0, 200)}\n\nPara voltar: apagar o arquivo PAUSAR.`);
               }
             }
           }
@@ -327,7 +356,7 @@ function iniciarWebhook(e) {
 
 // ---------------------------------------------------------------- comandos auxiliares
 function plano() {
-  const total = lerCSV(CFG.ARQUIVO_CONTATOS).filter(c => c.whatsapp).length;
+  const total = Object.values(carregarEstado().contatos).filter(c => c.status === 'pendente').length;
   let acum = 0;
   console.log(`\nContatos na lista: ${total}\n`);
   console.log('Dia          Janelas                      Novos  Follow-ups  Acumulado');
@@ -361,7 +390,7 @@ function status() {
   const cs = Object.values(e.contatos);
   const por = s => cs.filter(c => c.status === s).length;
   console.log(`\nContatos: ${cs.length}`);
-  for (const s of ['pendente', 'enviado', 'respondeu', 'optout', 'sem_whatsapp', 'erro']) console.log(`  ${s.padEnd(13)} ${por(s)}`);
+  for (const s of ['pendente', 'enviado', 'respondeu', 'optout', 'contatado_antes', 'sem_whatsapp', 'erro']) console.log(`  ${s.padEnd(13)} ${por(s)}`);
   console.log(`  follow-ups enviados ${cs.filter(c => c.followupEm > 0).length}`);
   console.log('\nPor dia:', JSON.stringify(e.porDia));
   console.log(fs.existsSync(path.join(DADOS, 'PAUSAR')) ? '\n⏸️ PAUSADO (arquivo PAUSAR existe)\n' : '');
