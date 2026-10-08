@@ -47,8 +47,8 @@ Mesmo repositório do Acelera Investidor, outro **Build Path**:
 
 1. **+ Service → App**, nome: `disparo-central`.
 2. **Source:** GitHub → `luiznunees/disparo-casamar` → branch `main`.
-3. **Build Path: `disparo_central`** ← é isto que separa os dois serviços. O Docker build usa essa pasta como contexto, então os `COPY` do `Dockerfile` funcionam como estão.
-4. **Build:** Dockerfile (ele é detectado sozinho porque existe `disparo_central/Dockerfile`).
+3. **Build Path: `disparo-central`** ← é isto que separa os dois serviços (a pasta no repo tem o mesmo nome do app). O Docker build usa essa pasta como contexto, então os `COPY` do `Dockerfile` funcionam como estão.
+4. **Build:** Dockerfile (ele é detectado sozinho porque existe `disparo-central/Dockerfile`).
 5. **Environment:**
    ```
    EVOLUTION_API_URL=https://zapbroker-evolution-api.mnfvp3.easypanel.host
