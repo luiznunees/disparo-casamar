@@ -83,36 +83,37 @@ module.exports = {
   //  pf = pessoa física · pj = empresa
   //  *texto* = negrito no WhatsApp
   // ------------------------------------------------------------------
+  //  {saudacao} = Bom dia / Boa tarde / Boa noite (pelo horário do envio) · {saudacao_min} = minúscula
   VARIANTES: {
-    // A – igual à sua base, só corrigindo acentuação
+    // A – direta, com saudação do horário
     A: {
       imagem: true,
-      pf: 'Olá, tudo bem? Gostaria de lhe apresentar uma variação de investimento: apartamentos com parcelas a partir de *R$ 2.500,00*, na Avenida Central de Atlântida.\n\nGostaria de agendar uma apresentação?\n\n{remetente} – Casa Mar Imóveis',
-      pj: 'Olá, tudo bem? Gostaria de apresentar uma variação de investimento para vocês: apartamentos com parcelas a partir de *R$ 2.500,00*, na Avenida Central de Atlântida.\n\nGostariam de agendar uma apresentação?\n\n{remetente} – Casa Mar Imóveis',
+      pf: '{saudacao}, {nome}! Tudo bem?\n\nQueria te apresentar uma opção de investimento aqui em Atlântida: apartamentos na Avenida Central, com parcelas a partir de *R$ 2.500*.\n\nPosso te mostrar com mais detalhes?\n\n{remetente} · Casa Mar Imóveis',
+      pj: '{saudacao}! Tudo bem?\n\nQueria apresentar uma opção de investimento aqui em Atlântida: apartamentos na Avenida Central, com parcelas a partir de *R$ 2.500*.\n\nPosso mostrar com mais detalhes?\n\n{remetente} · Casa Mar Imóveis',
     },
-    // B – com nome + assinatura no topo
+    // B – se apresenta primeiro e oferece conversa rápida
     B: {
       imagem: true,
-      pf: 'Oi {nome}, tudo bem? Aqui é o {remetente}, da Casa Mar Imóveis.\n\nEstou apresentando uma nova oportunidade de investimento em Atlântida: apartamentos com parcelas a partir de *R$ 2.500,00*, na Avenida Central.\n\nPosso te agendar uma apresentação? Leva uns 15 minutos.\n\n{remetente} – Casa Mar Imóveis',
-      pj: 'Olá, tudo bem? Aqui é o {remetente}, da Casa Mar Imóveis.\n\nEstamos apresentando uma nova oportunidade de investimento em Atlântida: apartamentos com parcelas a partir de *R$ 2.500,00*, na Avenida Central.\n\nPodemos agendar uma apresentação?\n\n{remetente} – Casa Mar Imóveis',
+      pf: '{saudacao}, {nome}, tudo bem? Aqui é o {remetente}, da Casa Mar Imóveis.\n\nTô com uma oportunidade nova em Atlântida: apartamentos na Avenida Central, com parcelas a partir de *R$ 2.500*.\n\nTe mostro numa conversa rápida, uns 15 minutinhos. Faz sentido?',
+      pj: '{saudacao}, tudo bem? Aqui é o {remetente}, da Casa Mar Imóveis.\n\nTemos uma oportunidade nova em Atlântida: apartamentos na Avenida Central, com parcelas a partir de *R$ 2.500*.\n\nPosso apresentar numa conversa rápida, uns 15 minutos?',
     },
-    // C – curta, pergunta aberta
+    // C – curta, oferece mandar detalhes
     C: {
       imagem: true,
-      pf: 'Oi {nome}! Separei uma opção de investimento para te mostrar: apartamento na Avenida Central de Atlântida, com parcela a partir de *R$ 2.500,00*.\n\nFaz sentido eu te apresentar?\n\n{remetente} – Casa Mar Imóveis',
-      pj: 'Olá! Separei uma opção de investimento para vocês: apartamento na Avenida Central de Atlântida, com parcela a partir de *R$ 2.500,00*.\n\nFaz sentido apresentarmos para vocês?\n\n{remetente} – Casa Mar Imóveis',
+      pf: 'Oi {nome}, {saudacao_min}! Separei uma opção de investimento pra te mostrar: apartamento na Avenida Central de Atlântida, com parcela a partir de *R$ 2.500*.\n\nQuer que eu te mande os detalhes?\n\n{remetente} · Casa Mar Imóveis',
+      pj: 'Olá, {saudacao_min}! Separei uma opção de investimento pra vocês: apartamento na Avenida Central de Atlântida, com parcela a partir de *R$ 2.500*.\n\nPosso mandar os detalhes?\n\n{remetente} · Casa Mar Imóveis',
     },
-    // D – apela para quem quer entrar no mercado barato
+    // D – porta de entrada para ter imóvel no litoral
     D: {
       imagem: true,
-      pf: 'Boa tarde, {nome}! Aqui é o {remetente}, da Casa Mar Imóveis.\n\nChegou uma oportunidade para quem quer entrar no mercado com parcela a partir de *R$ 2.500,00*: apartamentos na Avenida Central de Atlântida.\n\nQuer que eu agende uma apresentação para você?\n\n{remetente} – Casa Mar Imóveis',
-      pj: 'Boa tarde! Aqui é o {remetente}, da Casa Mar Imóveis.\n\nChegou uma oportunidade para quem quer entrar no mercado com parcela a partir de *R$ 2.500,00*: apartamentos na Avenida Central de Atlântida.\n\nQuerem que eu agende uma apresentação?\n\n{remetente} – Casa Mar Imóveis',
+      pf: '{saudacao}, {nome}! Aqui é o {remetente}, da Casa Mar Imóveis 🙂\n\nSe você pensa em ter um imóvel no litoral, essa é uma boa porta de entrada: apartamentos na Avenida Central de Atlântida, com parcela a partir de *R$ 2.500*.\n\nQuer que eu te explique como funciona?',
+      pj: '{saudacao}! Aqui é o {remetente}, da Casa Mar Imóveis 🙂\n\nPra quem pensa em investir no litoral, essa é uma boa porta de entrada: apartamentos na Avenida Central de Atlântida, com parcela a partir de *R$ 2.500*.\n\nQuerem que eu explique como funciona?',
     },
   },
 
   // Follow-up de 24h (só texto, sem foto) para quem não respondeu
   FOLLOWUP: {
-    pf: '{nome}, tudo bem? Só passando para saber se conseguiu ver a oportunidade que te mandei: apartamentos na Avenida Central de Atlântida, com parcelas a partir de *R$ 2.500,00*.\n\nQuer que eu agende uma apresentação?\n\n{remetente} – Casa Mar Imóveis',
-    pj: 'Tudo bem? Só passando para saber se conseguiram ver a oportunidade que mandei: apartamentos na Avenida Central de Atlântida, com parcelas a partir de *R$ 2.500,00*.\n\nQuerem que eu agende uma apresentação?\n\n{remetente} – Casa Mar Imóveis',
+    pf: '{saudacao}, {nome}! Conseguiu ver a opção que te mandei, dos apartamentos na Avenida Central com parcela a partir de *R$ 2.500*?\n\nSe quiser, te passo os detalhes por aqui mesmo.\n\n(Se não fizer sentido pra você, é só me avisar.)',
+    pj: '{saudacao}! Conseguiram ver a opção que mandei, dos apartamentos na Avenida Central com parcela a partir de *R$ 2.500*?\n\nSe quiserem, passo os detalhes por aqui mesmo.\n\n(Se não fizer sentido, é só avisar.)',
   },
 };

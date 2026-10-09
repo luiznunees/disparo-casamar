@@ -52,7 +52,7 @@ Mesmo repositório do Acelera Investidor, outro **Build Path**:
 5. **Environment:**
    ```
    EVOLUTION_API_URL=https://zapbroker-evolution-api.mnfvp3.easypanel.host
-   EVOLUTION_API_KEY=429683C4C977415CAAFCCE10F7D57E11
+   EVOLUTION_API_KEY=(a mesma do ZapBroker – nunca escreva a chave aqui)
    EVOLUTION_INSTANCE=disparocasamar
    AVISAR_NUMEROS=5551980985330
    AVISAR_GRUPOS=120363429524605097@g.us

@@ -131,8 +131,16 @@ function proximoNovo(e) {
 function hash(s) { let h = 7; for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; }
 
 // ---------------------------------------------------------------- mensagens
+// "Bom dia" até 12h, "Boa tarde" até 18h, "Boa noite" depois (no fuso do config)
+function saudacao(d = new Date()) {
+  const h = Number(new Intl.DateTimeFormat('en-GB', { timeZone: CFG.FUSO, hour: '2-digit', hourCycle: 'h23' }).format(d));
+  return h >= 5 && h < 12 ? 'Bom dia' : h >= 12 && h < 18 ? 'Boa tarde' : 'Boa noite';
+}
 function montar(modelo, c) {
+  const s = saudacao();
   return modelo
+    .replace(/\{saudacao\}/g, s)
+    .replace(/\{saudacao_min\}/g, s.toLowerCase())
     .replace(/\{nome\}/g, c.primeiroNome || '')
     .replace(/\{condominio\}/g, CFG.NOME_CONDOMINIO[c.condominio] || c.condominio)
     .replace(/\{remetente\}/g, CFG.REMETENTE);
