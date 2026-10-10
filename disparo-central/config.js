@@ -39,6 +39,8 @@ module.exports = {
       novos: 100,   // 50 de manhã + 50 à tarde
       followups: 50, // reforço de 24h das mensagens de hoje (só ficam prontos a partir das 18h)
     },
+    // sáb: retomada depois da queda de 09/10 às 9h20 (ritmo mais lento: 5 a 8 min)
+    '2026-10-10': { janelas: [['09:30', '12:30'], ['14:00', '18:00']], novos: 40, followups: 25 },
   },
 
   // null = roda o teste A/B, alternando entre as 4 variantes do contatos.csv.
